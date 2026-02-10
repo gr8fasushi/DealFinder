@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Heart } from "lucide-react";
+import { useAuth } from "@clerk/nextjs";
 
 interface Deal {
   id: number;
@@ -27,12 +28,55 @@ interface Deal {
 
 interface DealCardProps {
   deal: Deal;
+  initialIsSaved?: boolean;
 }
 
-export function DealCard({ deal }: DealCardProps) {
+export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
+  const [isSaved, setIsSaved] = useState(initialIsSaved);
+  const [isLoading, setIsLoading] = useState(false);
+  const { isSignedIn } = useAuth();
+
   const savings = deal.savingsPercent
     ? Math.round(parseFloat(deal.savingsPercent))
     : null;
+
+  const handleSaveToggle = async () => {
+    if (!isSignedIn) {
+      // Redirect to sign in
+      window.location.href = "/sign-in";
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      if (isSaved) {
+        // Unsave
+        const response = await fetch(`/api/deals/saved/${deal.id}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          setIsSaved(false);
+        }
+      } else {
+        // Save
+        const response = await fetch("/api/deals/saved", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dealId: deal.id }),
+        });
+
+        if (response.ok) {
+          setIsSaved(true);
+        }
+      }
+    } catch (error) {
+      console.error("Error toggling save:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
@@ -109,16 +153,15 @@ export function DealCard({ deal }: DealCardProps) {
       <CardFooter className="p-4 pt-0 flex gap-2">
         {/* Save Button */}
         <Button
-          variant="outline"
+          variant={isSaved ? "default" : "outline"}
           size="icon"
           className="shrink-0"
-          onClick={(e) => {
-            e.preventDefault();
-            // TODO: Implement save deal functionality
-            console.log("Save deal:", deal.id);
-          }}
+          onClick={handleSaveToggle}
+          disabled={isLoading}
         >
-          <Heart className="h-4 w-4" />
+          <Heart
+            className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`}
+          />
         </Button>
 
         {/* View Deal Button */}
