@@ -1,4 +1,4 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
@@ -12,7 +12,7 @@ const isProtectedRoute = createRouteMatcher([
 const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/scraper(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
   // Protect authenticated routes
   if (isProtectedRoute(req)) {
@@ -25,8 +25,11 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
 
-    // Check if user has admin role
-    const userRole = (sessionClaims?.metadata as { role?: string })?.role;
+    // Fetch user from Clerk to get public metadata
+    const client = await clerkClient();
+    const user = await client.users.getUser(userId);
+    const userRole = user.publicMetadata?.role as string | undefined;
+
     if (userRole !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

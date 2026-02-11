@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { checkAdminAccess } from "@/lib/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { categories } from "@/lib/db/schema";
@@ -8,14 +8,9 @@ import { categoryFormSchema } from "@/lib/validations/category";
 // GET all categories
 export async function GET() {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if ((sessionClaims?.metadata as { role?: string })?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authCheck = await checkAdminAccess();
+    if (!authCheck.authorized) {
+      return NextResponse.json(authCheck.error, { status: authCheck.status });
     }
 
     const allCategories = await db.query.categories.findMany({
@@ -35,14 +30,9 @@ export async function GET() {
 // POST create new category
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if ((sessionClaims?.metadata as { role?: string })?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authCheck = await checkAdminAccess();
+    if (!authCheck.authorized) {
+      return NextResponse.json(authCheck.error, { status: authCheck.status });
     }
 
     const body = await request.json();

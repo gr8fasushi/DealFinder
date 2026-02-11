@@ -1,21 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { stores } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { storeFormSchema } from "@/lib/validations/store";
+import { checkAdminAccess } from "@/lib/auth-helpers";
 
 // GET all stores
 export async function GET() {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if ((sessionClaims?.metadata as { role?: string })?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authCheck = await checkAdminAccess();
+    if (!authCheck.authorized) {
+      return NextResponse.json(authCheck.error, { status: authCheck.status });
     }
 
     const allStores = await db.query.stores.findMany({
@@ -35,14 +30,9 @@ export async function GET() {
 // POST create new store
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if ((sessionClaims?.metadata as { role?: string })?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authCheck = await checkAdminAccess();
+    if (!authCheck.authorized) {
+      return NextResponse.json(authCheck.error, { status: authCheck.status });
     }
 
     const body = await request.json();

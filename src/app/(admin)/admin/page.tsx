@@ -4,6 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardStats } from "@/components/admin/DashboardStats";
 import { Badge } from "@/components/ui/badge";
+import { db } from "@/lib/db";
+import { deals, stores, categories } from "@/lib/db/schema";
+import { sql, desc } from "drizzle-orm";
 
 interface RecentDeal {
   id: number;
@@ -25,16 +28,53 @@ interface Stats {
 }
 
 async function getStats(): Promise<Stats> {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-  const res = await fetch(`${baseUrl}/api/admin/stats`, {
-    cache: "no-store",
+  // Get total and active deals count
+  const dealsCountResult = await db
+    .select({
+      total: sql<number>`cast(count(*) as integer)`,
+      active: sql<number>`cast(count(*) filter (where ${deals.isActive} = true) as integer)`,
+    })
+    .from(deals);
+
+  const dealsCount = dealsCountResult[0] || { total: 0, active: 0 };
+
+  // Get total and active stores count
+  const storesCountResult = await db
+    .select({
+      total: sql<number>`cast(count(*) as integer)`,
+      active: sql<number>`cast(count(*) filter (where ${stores.isActive} = true) as integer)`,
+    })
+    .from(stores);
+
+  const storesCount = storesCountResult[0] || { total: 0, active: 0 };
+
+  // Get total categories count
+  const categoriesCountResult = await db
+    .select({
+      total: sql<number>`cast(count(*) as integer)`,
+    })
+    .from(categories);
+
+  const categoriesCount = categoriesCountResult[0]?.total || 0;
+
+  // Get recent deals
+  const recentDeals = await db.query.deals.findMany({
+    with: {
+      store: true,
+      category: true,
+    },
+    orderBy: [desc(deals.createdAt)],
+    limit: 10,
   });
 
-  if (!res.ok) {
-    throw new Error("Failed to fetch stats");
-  }
-
-  return res.json();
+  return {
+    totalDeals: dealsCount.total,
+    activeDeals: dealsCount.active,
+    totalStores: storesCount.total,
+    activeStores: storesCount.active,
+    totalCategories: categoriesCount,
+    recentDeals: recentDeals as RecentDeal[],
+  };
 }
 
 export default async function AdminDashboard() {

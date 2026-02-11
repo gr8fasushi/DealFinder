@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { checkAdminAccess } from "@/lib/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { deals } from "@/lib/db/schema";
@@ -8,14 +8,9 @@ import { dealFormSchema } from "@/lib/validations/deal";
 // GET all deals (admin view - includes inactive)
 export async function GET() {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if ((sessionClaims?.metadata as { role?: string })?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authCheck = await checkAdminAccess();
+    if (!authCheck.authorized) {
+      return NextResponse.json(authCheck.error, { status: authCheck.status });
     }
 
     const allDeals = await db.query.deals.findMany({
@@ -39,14 +34,9 @@ export async function GET() {
 // POST create new deal
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if ((sessionClaims?.metadata as { role?: string })?.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    const authCheck = await checkAdminAccess();
+    if (!authCheck.authorized) {
+      return NextResponse.json(authCheck.error, { status: authCheck.status });
     }
 
     const body = await request.json();
@@ -92,7 +82,7 @@ export async function POST(request: NextRequest) {
           ? new Date(validatedData.expiresAt)
           : null,
         source: "manual",
-        createdBy: userId,
+        createdBy: authCheck.userId,
       })
       .returning();
 
