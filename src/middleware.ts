@@ -26,7 +26,7 @@ export default clerkMiddleware(async (auth, req) => {
     }
 
     // Check if user has admin role
-    const userRole = sessionClaims?.metadata?.role;
+    const userRole = (sessionClaims?.metadata as { role?: string })?.role;
     if (userRole !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -80,13 +81,15 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
 
   return (
     <Card className="group overflow-hidden hover:shadow-lg transition-all duration-300">
-      {/* Deal Image */}
-      <div className="relative aspect-square overflow-hidden bg-gray-100">
+      <Link href={`/deals/${deal.id}`} className="block">
+        {/* Deal Image */}
+        <div className="relative aspect-square overflow-hidden bg-gray-100">
         {deal.imageUrl ? (
           <Image
             src={deal.imageUrl}
             alt={deal.title}
             fill
+            unoptimized
             className="object-contain p-4 group-hover:scale-105 transition-transform duration-300"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
@@ -111,6 +114,7 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
               alt={deal.store.name}
               width={40}
               height={40}
+              unoptimized
               className="object-contain"
             />
           </div>
@@ -149,6 +153,7 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
           </p>
         )}
       </CardContent>
+      </Link>
 
       <CardFooter className="p-4 pt-0 flex gap-2">
         {/* Save Button */}
@@ -156,7 +161,11 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
           variant={isSaved ? "default" : "outline"}
           size="icon"
           className="shrink-0"
-          onClick={handleSaveToggle}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleSaveToggle();
+          }}
           disabled={isLoading}
         >
           <Heart

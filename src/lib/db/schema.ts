@@ -74,14 +74,16 @@ export const stores = pgTable(
 );
 
 // Categories
-export const categories = pgTable(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const categories: any = pgTable(
   "categories",
   {
     id: serial("id").primaryKey(),
     name: varchar("name", { length: 100 }).notNull().unique(),
     slug: varchar("slug", { length: 100 }).notNull().unique(),
     description: text("description"),
-    parentId: integer("parent_id").references(() => categories.id, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    parentId: integer("parent_id").references((): any => categories.id, {
       onDelete: "set null",
     }), // For subcategories
     createdAt: timestamp("created_at").defaultNow().notNull(),

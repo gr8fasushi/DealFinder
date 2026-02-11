@@ -61,7 +61,7 @@ async function seed() {
 
   // Seed Categories
   console.log("📁 Creating categories...");
-  const categoriesData = await db
+  const categoriesData = (await db
     .insert(schema.categories)
     .values([
       {
@@ -95,7 +95,7 @@ async function seed() {
         description: "Headphones, speakers, and audio equipment",
       },
     ])
-    .returning();
+    .returning()) as any[];
 
   console.log(`✅ Created ${categoriesData.length} categories`);
 

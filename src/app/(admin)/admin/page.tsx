@@ -1,0 +1,141 @@
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DashboardStats } from "@/components/admin/DashboardStats";
+import { Badge } from "@/components/ui/badge";
+
+interface RecentDeal {
+  id: number;
+  title: string;
+  currentPrice: string;
+  originalPrice: string | null;
+  isActive: boolean;
+  store: { name: string } | null;
+  category: { name: string } | null;
+}
+
+interface Stats {
+  totalDeals: number;
+  activeDeals: number;
+  totalStores: number;
+  activeStores: number;
+  totalCategories: number;
+  recentDeals: RecentDeal[];
+}
+
+async function getStats(): Promise<Stats> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
+  const res = await fetch(`${baseUrl}/api/admin/stats`, {
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch stats");
+  }
+
+  return res.json();
+}
+
+export default async function AdminDashboard() {
+  const stats = await getStats();
+
+  return (
+    <div className="p-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600 mt-2">
+          Welcome to the DealFinder admin panel
+        </p>
+      </div>
+
+      <DashboardStats stats={stats} />
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Quick Actions
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <Link href="/admin/deals/new">
+            <Button className="w-full h-auto py-6 flex flex-col items-center gap-2">
+              <Plus className="h-6 w-6" />
+              <span>Add New Deal</span>
+            </Button>
+          </Link>
+          <Link href="/admin/stores/new">
+            <Button
+              variant="outline"
+              className="w-full h-auto py-6 flex flex-col items-center gap-2"
+            >
+              <Plus className="h-6 w-6" />
+              <span>Add New Store</span>
+            </Button>
+          </Link>
+          <Link href="/admin/categories/new">
+            <Button
+              variant="outline"
+              className="w-full h-auto py-6 flex flex-col items-center gap-2"
+            >
+              <Plus className="h-6 w-6" />
+              <span>Add New Category</span>
+            </Button>
+          </Link>
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Deals</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {stats.recentDeals.length > 0 ? (
+              <div className="space-y-4">
+                {stats.recentDeals.map((deal) => (
+                  <div
+                    key={deal.id}
+                    className="flex items-center justify-between border-b border-gray-200 pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="flex-1">
+                      <h3 className="font-medium text-gray-900">{deal.title}</h3>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="outline" className="text-xs">
+                          {deal.store?.name}
+                        </Badge>
+                        {deal.category && (
+                          <Badge variant="secondary" className="text-xs">
+                            {deal.category.name}
+                          </Badge>
+                        )}
+                        <Badge
+                          variant={deal.isActive ? "default" : "secondary"}
+                          className="text-xs"
+                        >
+                          {deal.isActive ? "Active" : "Inactive"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-lg font-bold text-gray-900">
+                        ${parseFloat(deal.currentPrice).toFixed(2)}
+                      </div>
+                      {deal.originalPrice && (
+                        <div className="text-sm text-gray-500 line-through">
+                          ${parseFloat(deal.originalPrice).toFixed(2)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-8">
+                No deals yet. Create your first deal to get started.
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

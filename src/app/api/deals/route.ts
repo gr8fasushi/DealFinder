@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { deals, stores, categories } from "@/lib/db/schema";
-import { desc, eq, and, gte, lte, like, sql } from "drizzle-orm";
+import { desc, eq, and, gte, lte, sql } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
   try {

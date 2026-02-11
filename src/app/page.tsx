@@ -45,7 +45,7 @@ export default async function Home() {
         </div>
 
         {/* Deal Grid */}
-        <DealGrid deals={latestDeals} />
+        <DealGrid deals={latestDeals as unknown as Parameters<typeof DealGrid>[0]["deals"]} />
       </div>
     </main>
   );

@@ -27,7 +27,7 @@ export default async function SavedDealsPage() {
   });
 
   // Extract just the deals
-  const deals = userSavedDeals.map((sd) => sd.deal);
+  const deals = userSavedDeals.map((sd) => sd.deal) as unknown[];
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
@@ -61,7 +61,7 @@ export default async function SavedDealsPage() {
             </p>
           </div>
         ) : (
-          <DealGrid deals={deals} />
+          <DealGrid deals={deals as Parameters<typeof DealGrid>[0]["deals"]} />
         )}
       </div>
     </main>
