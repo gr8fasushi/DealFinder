@@ -16,7 +16,6 @@ export async function checkAdminAccess() {
   }
 
   try {
-    // Fetch user from Clerk to get public metadata
     const client = await clerkClient();
     const user = await client.users.getUser(userId);
     const userRole = user.publicMetadata?.role as string | undefined;
@@ -34,7 +33,7 @@ export async function checkAdminAccess() {
       userId,
     } as const;
   } catch (error) {
-    console.error("Error checking admin access:", error);
+    console.error("[checkAdminAccess] Error fetching user:", error);
     return {
       authorized: false,
       error: { error: "Internal server error" },

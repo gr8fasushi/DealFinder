@@ -14,6 +14,8 @@ export async function GET(request: NextRequest) {
     const categorySlug = searchParams.get("category");
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
+    const minDiscount = searchParams.get("minDiscount");
+    const featured = searchParams.get("featured");
     const search = searchParams.get("search");
     const sortBy = searchParams.get("sortBy") || "newest";
 
@@ -44,6 +46,14 @@ export async function GET(request: NextRequest) {
 
     if (maxPrice) {
       conditions.push(lte(deals.currentPrice, maxPrice));
+    }
+
+    if (minDiscount) {
+      conditions.push(gte(deals.savingsPercent, minDiscount));
+    }
+
+    if (featured === "true") {
+      conditions.push(eq(deals.isFeatured, true));
     }
 
     if (search) {

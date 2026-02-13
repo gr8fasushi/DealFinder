@@ -1,17 +1,19 @@
 import { DealForm } from "@/components/admin/DealForm";
 import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { deals } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 async function getDeal(id: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-  const res = await fetch(`${baseUrl}/api/admin/deals/${id}`, {
-    cache: "no-store",
+  const deal = await db.query.deals.findFirst({
+    where: eq(deals.id, parseInt(id)),
+    with: {
+      store: true,
+      category: true,
+    },
   });
 
-  if (!res.ok) {
-    return null;
-  }
-
-  return res.json();
+  return deal || null;
 }
 
 export default async function EditDealPage({

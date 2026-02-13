@@ -2,22 +2,19 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CategoriesTable } from "@/components/admin/CategoriesTable";
+import { db } from "@/lib/db";
+import { categories } from "@/lib/db/schema";
+import { desc } from "drizzle-orm";
 
 async function getCategories() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-  const res = await fetch(`${baseUrl}/api/admin/categories`, {
-    cache: "no-store",
+  const allCategories = await db.query.categories.findMany({
+    orderBy: [desc(categories.createdAt)],
   });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch categories");
-  }
-
-  return res.json();
+  return allCategories;
 }
 
 export default async function CategoriesPage() {
-  const categories = await getCategories();
+  const categoriesData = await getCategories();
 
   return (
     <div className="p-8">
@@ -36,7 +33,7 @@ export default async function CategoriesPage() {
         </Link>
       </div>
 
-      <CategoriesTable categories={categories} />
+      <CategoriesTable categories={categoriesData} />
     </div>
   );
 }

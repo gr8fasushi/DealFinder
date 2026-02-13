@@ -1,23 +1,16 @@
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { checkAdminAccess } from "@/lib/auth-helpers";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { userId, sessionClaims } = await auth();
-
-  // Redirect if not authenticated
-  if (!userId) {
+  // Check admin access using Clerk API
+  const access = await checkAdminAccess();
+  if (!access.authorized) {
     redirect("/sign-in");
-  }
-
-  // Check if user has admin role
-  const userRole = (sessionClaims?.metadata as { role?: string })?.role;
-  if (userRole !== "admin") {
-    redirect("/");
   }
 
   return (

@@ -74,6 +74,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Handle duplicate store name error
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
+      return NextResponse.json(
+        { error: "A store with this name already exists" },
+        { status: 409 }
+      );
+    }
+
     console.error("Error creating store:", error);
     return NextResponse.json(
       { error: "Failed to create store" },

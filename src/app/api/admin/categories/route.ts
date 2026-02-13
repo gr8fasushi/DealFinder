@@ -86,6 +86,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Handle duplicate category name error
+    if (error && typeof error === 'object' && 'code' in error && error.code === '23505') {
+      return NextResponse.json(
+        { error: "A category with this name already exists" },
+        { status: 409 }
+      );
+    }
+
     console.error("Error creating category:", error);
     return NextResponse.json(
       { error: "Failed to create category" },

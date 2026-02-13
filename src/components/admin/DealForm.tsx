@@ -102,8 +102,14 @@ export function DealForm({ initialData, mode }: DealFormProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save deal");
+        let message = "Failed to save deal";
+        try {
+          const errorData = await response.json();
+          message = errorData.error || message;
+        } catch {
+          // Response was not JSON
+        }
+        throw new Error(message);
       }
 
       setSuccess(true);

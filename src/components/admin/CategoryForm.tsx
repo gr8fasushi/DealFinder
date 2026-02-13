@@ -97,8 +97,14 @@ export function CategoryForm({ initialData, mode }: CategoryFormProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save category");
+        let message = "Failed to save category";
+        try {
+          const errorData = await response.json();
+          message = errorData.error || message;
+        } catch {
+          // Response was not JSON
+        }
+        throw new Error(message);
       }
 
       setSuccess(true);

@@ -2,22 +2,19 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StoresTable } from "@/components/admin/StoresTable";
+import { db } from "@/lib/db";
+import { stores } from "@/lib/db/schema";
+import { desc } from "drizzle-orm";
 
 async function getStores() {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-  const res = await fetch(`${baseUrl}/api/admin/stores`, {
-    cache: "no-store",
+  const allStores = await db.query.stores.findMany({
+    orderBy: [desc(stores.createdAt)],
   });
-
-  if (!res.ok) {
-    throw new Error("Failed to fetch stores");
-  }
-
-  return res.json();
+  return allStores;
 }
 
 export default async function StoresPage() {
-  const stores = await getStores();
+  const storesData = await getStores();
 
   return (
     <div className="p-8">
@@ -36,7 +33,7 @@ export default async function StoresPage() {
         </Link>
       </div>
 
-      <StoresTable stores={stores} />
+      <StoresTable stores={storesData} />
     </div>
   );
 }

@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 const isProtectedRoute = createRouteMatcher([
   "/saved(.*)",
   "/profile(.*)",
-  "/admin(.*)",
   "/api/deals/saved(.*)",
   "/api/user(.*)",
 ]);
 
-const isAdminRoute = createRouteMatcher(["/admin(.*)", "/api/scraper(.*)"]);
+const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
+const isAdminApiRoute = createRouteMatcher(["/api/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
@@ -19,19 +19,31 @@ export default clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 
-  // Protect admin routes
+  // For admin pages, just require authentication (role check happens in page component)
   if (isAdminRoute(req)) {
     if (!userId) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
+  }
 
-    // Fetch user from Clerk to get public metadata
-    const client = await clerkClient();
-    const user = await client.users.getUser(userId);
-    const userRole = user.publicMetadata?.role as string | undefined;
+  // For admin API routes, check role here
+  if (isAdminApiRoute(req)) {
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-    if (userRole !== "admin") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    try {
+      // Fetch user from Clerk to get public metadata
+      const client = await clerkClient();
+      const user = await client.users.getUser(userId);
+      const userRole = user.publicMetadata?.role as string | undefined;
+
+      if (userRole !== "admin") {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    } catch (error) {
+      console.error("Error checking admin access:", error);
+      return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
   }
 });

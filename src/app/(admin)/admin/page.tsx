@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
+import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DashboardStats } from "@/components/admin/DashboardStats";
@@ -7,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { db } from "@/lib/db";
 import { deals, stores, categories } from "@/lib/db/schema";
 import { sql, desc } from "drizzle-orm";
+import { checkAdminAccess } from "@/lib/auth-helpers";
+import { ScraperPanel } from "@/components/admin/ScraperPanel";
 
 interface RecentDeal {
   id: number;
@@ -78,6 +81,12 @@ async function getStats(): Promise<Stats> {
 }
 
 export default async function AdminDashboard() {
+  // Check admin access
+  const access = await checkAdminAccess();
+  if (!access.authorized) {
+    redirect("/sign-in");
+  }
+
   const stats = await getStats();
 
   return (
@@ -121,6 +130,14 @@ export default async function AdminDashboard() {
             </Button>
           </Link>
         </div>
+      </div>
+
+      {/* Web Scraper */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">
+          Web Scraper
+        </h2>
+        <ScraperPanel />
       </div>
 
       <div className="mt-8">

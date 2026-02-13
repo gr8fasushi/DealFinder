@@ -1,17 +1,15 @@
 import { CategoryForm } from "@/components/admin/CategoryForm";
 import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { categories } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 async function getCategory(id: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-  const res = await fetch(`${baseUrl}/api/admin/categories/${id}`, {
-    cache: "no-store",
+  const category = await db.query.categories.findFirst({
+    where: eq(categories.id, parseInt(id)),
   });
 
-  if (!res.ok) {
-    return null;
-  }
-
-  return res.json();
+  return category || null;
 }
 
 export default async function EditCategoryPage({

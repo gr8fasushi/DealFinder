@@ -71,8 +71,14 @@ export function StoreForm({ initialData, mode }: StoreFormProps) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to save store");
+        let message = "Failed to save store";
+        try {
+          const errorData = await response.json();
+          message = errorData.error || message;
+        } catch {
+          // Response was not JSON
+        }
+        throw new Error(message);
       }
 
       setSuccess(true);

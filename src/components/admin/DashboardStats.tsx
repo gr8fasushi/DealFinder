@@ -39,7 +39,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
     {
       title: "Active Deals",
       value: stats.activeDeals,
-      subtitle: `${Math.round((stats.activeDeals / stats.totalDeals) * 100) || 0}% of total`,
+      subtitle: `${stats.totalDeals === 0 ? 0 : Math.round((stats.activeDeals / stats.totalDeals) * 100)}% of total`,
       icon: CheckCircle,
       color: "text-emerald-600",
     },

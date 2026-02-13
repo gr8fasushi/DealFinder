@@ -1,17 +1,15 @@
 import { StoreForm } from "@/components/admin/StoreForm";
 import { notFound } from "next/navigation";
+import { db } from "@/lib/db";
+import { stores } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 async function getStore(id: string) {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3001";
-  const res = await fetch(`${baseUrl}/api/admin/stores/${id}`, {
-    cache: "no-store",
+  const store = await db.query.stores.findFirst({
+    where: eq(stores.id, parseInt(id)),
   });
 
-  if (!res.ok) {
-    return null;
-  }
-
-  return res.json();
+  return store || null;
 }
 
 export default async function EditStorePage({

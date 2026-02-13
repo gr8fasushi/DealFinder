@@ -52,7 +52,7 @@ export function DealsTable({ deals: initialDeals }: DealsTableProps) {
         throw new Error("Failed to delete deal");
       }
 
-      setDeals(deals.map((d) => (d.id === id ? { ...d, isActive: false } : d)));
+      setDeals(deals.filter((d) => d.id !== id));
     } catch {
       alert("Failed to delete deal");
     } finally {
