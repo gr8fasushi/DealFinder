@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/saved(.*)",
@@ -11,17 +11,13 @@ const isProtectedRoute = createRouteMatcher([
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAdminApiRoute = createRouteMatcher(["/api/admin(.*)"]);
 
-// Custom middleware wrapper to bypass Clerk entirely for scraper endpoint
-export default function middleware(req: NextRequest) {
-  // Completely bypass all middleware for scraper endpoint
+export default clerkMiddleware(async (auth, req) => {
+  // Completely skip all auth checks for scraper endpoint
   if (req.nextUrl.pathname === '/api/admin/scraper/run') {
     return NextResponse.next();
   }
 
-  // For all other routes, use Clerk middleware
-  return clerkMiddleware(async (auth, req) => {
-
-  // For other admin API routes, check Clerk authentication
+  // For admin API routes (excluding scraper), check Clerk authentication
   if (isAdminApiRoute(req)) {
     const { userId } = await auth();
     if (!userId) {
@@ -41,9 +37,12 @@ export default function middleware(req: NextRequest) {
       console.error("Error checking admin access:", error);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
+
+    // Admin API routes are handled, return to avoid calling auth() again below
+    return;
   }
 
-  // For non-admin-API routes, get auth normally
+  // For non-admin routes, get auth normally
   const { userId } = await auth();
 
   // Protect authenticated routes
@@ -57,8 +56,7 @@ export default function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
   }
-  })(req);
-}
+});
 
 export const config = {
   matcher: [
