@@ -33,7 +33,7 @@ export default async function CategoriesPage() {
         </Link>
       </div>
 
-      <CategoriesTable categories={categoriesData} />
+      <CategoriesTable categories={categoriesData as any} />
     </div>
   );
 }

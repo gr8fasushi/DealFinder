@@ -7,6 +7,7 @@ import axios from "axios";
 import { scrapeNewegg } from "@/lib/scrapers/newegg-scraper";
 
 const mockAxios = vi.mocked(axios);
+const mockGet = mockAxios.get as any;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -50,7 +51,7 @@ const NEWEGG_EMPTY_HTML = `
 
 describe("scrapeNewegg", () => {
   it("extracts deals from item-cell elements", async () => {
-    mockAxios.get.mockResolvedValueOnce({ data: NEWEGG_HTML_WITH_ITEMS });
+    mockGet.mockResolvedValueOnce({ data: NEWEGG_HTML_WITH_ITEMS });
 
     const result = await scrapeNewegg();
 
@@ -83,7 +84,7 @@ describe("scrapeNewegg", () => {
         </div>
       </div>
     `;
-    mockAxios.get.mockResolvedValueOnce({ data: html });
+    mockGet.mockResolvedValueOnce({ data: html });
 
     const result = await scrapeNewegg();
 
@@ -91,7 +92,7 @@ describe("scrapeNewegg", () => {
   });
 
   it("returns failed status on network error", async () => {
-    mockAxios.get.mockRejectedValueOnce(new Error("Connection refused"));
+    mockGet.mockRejectedValueOnce(new Error("Connection refused"));
 
     const result = await scrapeNewegg();
 
@@ -102,7 +103,7 @@ describe("scrapeNewegg", () => {
   });
 
   it("returns partial status when no deals found", async () => {
-    mockAxios.get.mockResolvedValueOnce({ data: NEWEGG_EMPTY_HTML });
+    mockGet.mockResolvedValueOnce({ data: NEWEGG_EMPTY_HTML });
 
     const result = await scrapeNewegg();
 
@@ -112,7 +113,7 @@ describe("scrapeNewegg", () => {
   });
 
   it("includes duration in results", async () => {
-    mockAxios.get.mockResolvedValueOnce({ data: NEWEGG_EMPTY_HTML });
+    mockGet.mockResolvedValueOnce({ data: NEWEGG_EMPTY_HTML });
 
     const result = await scrapeNewegg();
 
@@ -127,7 +128,7 @@ describe("scrapeNewegg", () => {
         <div class="price-current">$49.99</div>
       </div>
     `;
-    mockAxios.get.mockResolvedValueOnce({ data: html });
+    mockGet.mockResolvedValueOnce({ data: html });
 
     const result = await scrapeNewegg();
 

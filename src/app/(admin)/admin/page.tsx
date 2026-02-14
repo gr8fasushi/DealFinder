@@ -76,7 +76,7 @@ async function getStats(): Promise<Stats> {
     totalStores: storesCount.total,
     activeStores: storesCount.active,
     totalCategories: categoriesCount,
-    recentDeals: recentDeals as RecentDeal[],
+    recentDeals: recentDeals as unknown as RecentDeal[],
   };
 }
 

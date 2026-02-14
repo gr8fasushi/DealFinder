@@ -28,14 +28,21 @@ export default async function EditDealPage({
     notFound();
   }
 
-  // Format date for datetime-local input
+  // Format date for datetime-local input and convert nulls to undefined
+  const dealData = deal as any;
   const formattedDeal = {
-    ...deal,
-    storeId: deal.store.id,
-    categoryId: deal.category?.id,
-    expiresAt: deal.expiresAt
-      ? new Date(deal.expiresAt).toISOString().slice(0, 16)
+    ...dealData,
+    storeId: dealData.store.id,
+    categoryId: dealData.category?.id ?? undefined,
+    expiresAt: dealData.expiresAt
+      ? new Date(dealData.expiresAt).toISOString().slice(0, 16)
       : "",
+    brand: dealData.brand ?? undefined,
+    imageUrl: dealData.imageUrl ?? undefined,
+    description: dealData.description ?? undefined,
+    originalPrice: dealData.originalPrice ?? undefined,
+    sku: dealData.sku ?? undefined,
+    externalId: dealData.externalId ?? undefined,
   };
 
   return (

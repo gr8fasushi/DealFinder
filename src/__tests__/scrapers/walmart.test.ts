@@ -7,6 +7,7 @@ import axios from "axios";
 import { scrapeWalmart } from "@/lib/scrapers/walmart-scraper";
 
 const mockAxios = vi.mocked(axios);
+const mockGet = mockAxios.get as any;
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -74,7 +75,7 @@ const WALMART_HTML_WITH_ITEMS = `
 
 describe("scrapeWalmart", () => {
   it("extracts deals from __NEXT_DATA__ JSON", async () => {
-    mockAxios.get.mockResolvedValueOnce({ data: WALMART_HTML_WITH_NEXT_DATA });
+    mockGet.mockResolvedValueOnce({ data: WALMART_HTML_WITH_NEXT_DATA });
 
     const result = await scrapeWalmart();
 
@@ -96,7 +97,7 @@ describe("scrapeWalmart", () => {
   });
 
   it("extracts deals from HTML item elements", async () => {
-    mockAxios.get.mockResolvedValueOnce({ data: WALMART_HTML_WITH_ITEMS });
+    mockGet.mockResolvedValueOnce({ data: WALMART_HTML_WITH_ITEMS });
 
     const result = await scrapeWalmart();
 
@@ -107,7 +108,7 @@ describe("scrapeWalmart", () => {
   });
 
   it("returns failed status on network error", async () => {
-    mockAxios.get.mockRejectedValueOnce(new Error("Network timeout"));
+    mockGet.mockRejectedValueOnce(new Error("Network timeout"));
 
     const result = await scrapeWalmart();
 
@@ -118,7 +119,7 @@ describe("scrapeWalmart", () => {
   });
 
   it("returns partial status when no deals found", async () => {
-    mockAxios.get.mockResolvedValueOnce({ data: "<html><body></body></html>" });
+    mockGet.mockResolvedValueOnce({ data: "<html><body></body></html>" });
 
     const result = await scrapeWalmart();
 
@@ -128,7 +129,7 @@ describe("scrapeWalmart", () => {
   });
 
   it("includes duration in results", async () => {
-    mockAxios.get.mockResolvedValueOnce({ data: "<html><body></body></html>" });
+    mockGet.mockResolvedValueOnce({ data: "<html><body></body></html>" });
 
     const result = await scrapeWalmart();
 

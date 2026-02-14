@@ -47,7 +47,7 @@ export default async function DealsPage() {
         </div>
       </div>
 
-      <DealsTable deals={dealsData} />
+      <DealsTable deals={dealsData as any} />
     </div>
   );
 }

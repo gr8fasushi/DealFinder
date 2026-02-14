@@ -24,6 +24,14 @@ export default async function EditStorePage({
     notFound();
   }
 
+  // Convert nulls to undefined for form compatibility
+  const formattedStore = {
+    ...store,
+    logoUrl: store.logoUrl ?? undefined,
+    websiteUrl: store.websiteUrl ?? undefined,
+    affiliateProgram: store.affiliateProgram ?? undefined,
+  };
+
   return (
     <div className="p-8 max-w-3xl">
       <div className="mb-8">
@@ -31,7 +39,7 @@ export default async function EditStorePage({
         <p className="text-gray-600 mt-2">Update store information</p>
       </div>
 
-      <StoreForm mode="edit" initialData={store} />
+      <StoreForm mode="edit" initialData={formattedStore} />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import type { Element } from "domhandler";
 import type { ScrapedDeal, ScraperResult } from "./types";
 import {
   getRandomUserAgent,
@@ -47,7 +48,7 @@ export async function scrapeWalmart(): Promise<ScraperResult> {
       if (items.length > 0) {
         foundItems = true;
         items.each((_index, element) => {
-          const deal = parseWalmartItem($, element);
+          const deal = parseWalmartItem($, element as Element);
           if (deal) deals.push(deal);
         });
         break;
@@ -115,7 +116,7 @@ export async function scrapeWalmart(): Promise<ScraperResult> {
 
 function parseWalmartItem(
   $: cheerio.CheerioAPI,
-  element: cheerio.Element
+  element: Element
 ): ScrapedDeal | null {
   try {
     const $el = $(element);

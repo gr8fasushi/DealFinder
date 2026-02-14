@@ -1,5 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
+import type { Element } from "domhandler";
 import type { ScrapedDeal, ScraperResult } from "./types";
 import {
   getRandomUserAgent,
@@ -42,7 +43,7 @@ export async function scrapeNewegg(): Promise<ScraperResult> {
       const items = $(selector);
       if (items.length > 0) {
         items.each((_index, element) => {
-          const deal = parseNeweggItem($, element);
+          const deal = parseNeweggItem($, element as Element);
           if (deal) deals.push(deal);
         });
         break;
@@ -71,7 +72,7 @@ export async function scrapeNewegg(): Promise<ScraperResult> {
 
 function parseNeweggItem(
   $: cheerio.CheerioAPI,
-  element: cheerio.Element
+  element: Element
 ): ScrapedDeal | null {
   try {
     const $el = $(element);
