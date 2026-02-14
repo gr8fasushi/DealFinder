@@ -10,22 +10,16 @@ const isProtectedRoute = createRouteMatcher([
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAdminApiRoute = createRouteMatcher(["/api/admin(.*)"]);
+const isScraperEndpoint = createRouteMatcher(["/api/admin/scraper/run"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  // For admin API routes, check CRON_SECRET FIRST before calling auth()
+  // Skip middleware entirely for scraper endpoint (auth handled in route)
+  if (isScraperEndpoint(req)) {
+    return NextResponse.next();
+  }
+
+  // For other admin API routes, check Clerk authentication
   if (isAdminApiRoute(req)) {
-    const authHeader = req.headers.get("authorization");
-    const cronSecret = process.env.CRON_SECRET;
-
-    if (authHeader && cronSecret) {
-      const token = authHeader.replace("Bearer ", "");
-      if (token === cronSecret) {
-        // Allow request to proceed with CRON_SECRET auth (bypass Clerk)
-        return NextResponse.next();
-      }
-    }
-
-    // If not authorized via CRON_SECRET, check Clerk authentication
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
