@@ -1,5 +1,5 @@
 import { clerkMiddleware, createRouteMatcher, clerkClient } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
 const isProtectedRoute = createRouteMatcher([
   "/saved(.*)",
@@ -10,13 +10,16 @@ const isProtectedRoute = createRouteMatcher([
 
 const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAdminApiRoute = createRouteMatcher(["/api/admin(.*)"]);
-const isScraperEndpoint = createRouteMatcher(["/api/admin/scraper/run"]);
 
-export default clerkMiddleware(async (auth, req) => {
-  // Skip middleware entirely for scraper endpoint (auth handled in route)
-  if (isScraperEndpoint(req)) {
+// Custom middleware wrapper to bypass Clerk entirely for scraper endpoint
+export default function middleware(req: NextRequest) {
+  // Completely bypass all middleware for scraper endpoint
+  if (req.nextUrl.pathname === '/api/admin/scraper/run') {
     return NextResponse.next();
   }
+
+  // For all other routes, use Clerk middleware
+  return clerkMiddleware(async (auth, req) => {
 
   // For other admin API routes, check Clerk authentication
   if (isAdminApiRoute(req)) {
@@ -54,13 +57,14 @@ export default clerkMiddleware(async (auth, req) => {
       return NextResponse.redirect(new URL("/sign-in", req.url));
     }
   }
-});
+  })(req);
+}
 
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
     "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes EXCEPT the scraper endpoint (handles its own auth)
-    "/(api|trpc)(?!/admin/scraper/run)(.*)",
+    // Always run for API routes (scraper endpoint bypassed in middleware function)
+    "/(api|trpc)(.*)",
   ],
 };
