@@ -381,6 +381,145 @@ describe("Feature/Component", () => {
 - Use `safeParse()` for Zod validation tests
 - Mock external dependencies (axios, database)
 
+## Security, Performance & Testing Standards
+
+### Security-First Development
+
+**CRITICAL: Always prioritize security and privacy when implementing features.**
+
+**Before Writing Code:**
+1. **Identify Security Risks**: Consider authentication, authorization, data validation, injection attacks, XSS, CSRF
+2. **Plan Security Measures**: How will this feature protect user data and prevent abuse?
+3. **Review Access Control**: Who should access this feature? What permissions are required?
+
+**During Implementation:**
+- **Input Validation**: Always validate and sanitize user input (use Zod schemas)
+- **SQL Injection Prevention**: Use parameterized queries (Drizzle ORM handles this)
+- **XSS Prevention**: Sanitize output, use React's built-in escaping, avoid `dangerouslySetInnerHTML`
+- **Authentication Checks**: Verify user identity before sensitive operations
+- **Authorization Checks**: Ensure user has proper permissions (admin checks, ownership checks)
+- **Rate Limiting**: Consider rate limits for API endpoints to prevent abuse
+- **Error Messages**: Don't expose sensitive information in error messages
+- **Secrets Management**: Never commit secrets, use environment variables
+- **HTTPS Only**: All external API calls must use HTTPS
+- **Content Security Policy**: Follow Next.js security best practices
+
+**Common Security Patterns:**
+```typescript
+// ✅ Good - Validate input
+const validatedData = schema.safeParse(input);
+if (!validatedData.success) {
+  return { error: "Invalid input" };
+}
+
+// ✅ Good - Check authorization
+const { userId } = await auth();
+if (!userId) return unauthorized();
+const resource = await db.query.resources.findFirst({ where: eq(resources.userId, userId) });
+if (!resource) return forbidden();
+
+// ❌ Bad - No validation
+const data = await request.json();
+await db.insert(table).values(data); // Unsafe!
+
+// ❌ Bad - No auth check
+const data = await db.query.resources.findFirst({ where: eq(resources.id, id) });
+// Anyone can access any resource!
+```
+
+### Performance & Architecture Best Practices
+
+**Performance is a Priority:**
+- Write efficient queries (use indexes, limit results, avoid N+1 queries)
+- Implement pagination for large datasets
+- Cache frequently accessed data (Redis, in-memory, React Query)
+- Optimize images (Next.js Image component, proper sizing)
+- Minimize client-side JavaScript bundle size
+- Use server components by default (faster initial load)
+- Implement lazy loading for non-critical content
+
+**Architecture Principles:**
+- **Single Responsibility**: Each function/component does one thing well
+- **DRY (Don't Repeat Yourself)**: Extract reusable logic into utilities
+- **Separation of Concerns**: Keep business logic separate from UI
+- **Consistent Patterns**: Follow existing patterns in the codebase
+- **Type Safety**: Leverage TypeScript for compile-time safety
+- **Error Boundaries**: Handle errors gracefully at appropriate levels
+- **Scalability**: Design with growth in mind (pagination, caching, indexes)
+
+**File Organization:**
+- Group related files by feature (colocation)
+- Keep components small and focused (< 300 lines)
+- Extract complex logic to custom hooks or utilities
+- Use barrel exports (`index.ts`) for cleaner imports
+
+### Test-Driven Feature Development
+
+**Before Implementing a Major Feature:**
+
+1. **Assess Testing Needs**:
+   - Is this a critical feature (authentication, payments, data integrity)?
+   - Are there edge cases that could cause bugs?
+   - Does this involve security-sensitive operations?
+   - Will this be hard to manually test?
+
+2. **Design Test Cases**:
+   - **Happy Path**: Feature works as expected with valid input
+   - **Edge Cases**: Boundary conditions, empty states, null/undefined
+   - **Error Handling**: Invalid input, network failures, permission denied
+   - **Security Tests**: Unauthorized access, injection attempts, XSS
+   - **Performance Tests**: Large datasets, concurrent requests
+
+3. **Write Tests First (TDD approach for critical features)**:
+   ```typescript
+   // Example: Testing user authentication
+   describe("User Authentication", () => {
+     it("allows authorized user to access protected resource", async () => {
+       // Test implementation
+     });
+
+     it("denies unauthorized user access", async () => {
+       // Test implementation
+     });
+
+     it("handles expired session gracefully", async () => {
+       // Test implementation
+     });
+   });
+   ```
+
+**After Implementing a Feature:**
+
+1. **Reevaluate Test Coverage**:
+   - Did implementation reveal new edge cases?
+   - Are all code paths covered?
+   - Are security measures properly tested?
+   - Do tests cover real-world usage scenarios?
+
+2. **Add Missing Tests**:
+   - Integration tests for critical flows
+   - Unit tests for complex utilities
+   - Security tests for sensitive operations
+   - Performance tests for data-heavy operations
+
+3. **Manual Testing Checklist**:
+   - Test in different browsers (Chrome, Firefox, Safari)
+   - Test responsive design (mobile, tablet, desktop)
+   - Test with slow network (throttle in DevTools)
+   - Test error states (disconnect network, invalid data)
+   - Test as different user roles (admin, regular user, guest)
+
+**When to Write Tests:**
+- **Always**: Authentication/Authorization, Data validation, Payment processing
+- **Recommended**: API endpoints, Complex utilities, Scrapers, Database operations
+- **Optional**: Simple UI components, One-off scripts, Styling-only changes
+
+**Testing Priority:**
+1. **Critical** (must have tests): Security, data integrity, payment flows
+2. **High** (should have tests): Core features, API endpoints, business logic
+3. **Medium** (nice to have): Complex UI components, utilities
+4. **Low** (optional): Simple components, styling, static content
+
 ## Development Workflow
 
 ### Running the App
