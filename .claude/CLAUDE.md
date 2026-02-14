@@ -16,11 +16,11 @@ DealFinder is a Next.js 15 deal aggregation platform that scrapes and displays d
 - **Testing:** Vitest
 
 ## Active Session Summary
-- **Current Task**: Lightning strike animation added to banner - committed successfully
-- **Recent Decisions**: Implemented SVG-based lightning with realistic branching patterns; reduced stroke widths to 4/2.5/1.5/0.5px for thin appearance; updated header/footer logos with lightning bolt theme
-- **What Works**: LightningStrikes component generates random vertical strikes with branches, multiple simultaneous strikes, quick fade animation, proper sharp endpoints; test page created at /test-lightning
-- **What Didn't Work Well**: Initial thick stroke widths (18-6px) created blobby appearance; SVG generation approach may be unnecessarily complex
-- **Next Steps**: Consider replacing SVG generation with 10-15 real lightning images for guaranteed realistic appearance and better performance
+- **Current Task**: Lightning animation complete and tested; user browsing site to verify features
+- **Recent Work**: Lightning strike animation committed with thin realistic strokes; user tested site and found saved deals feature working with minor issue
+- **What Works**: Lightning animation displays properly on homepage banner; YouTube video integration working (600 quota units used); deals browsing functional
+- **Known Issues**: Saved deals foreign key constraint error - user not in users table (user_39SmCswlPMyRN4GCn2uhCyuolqJ missing from users table)
+- **Next Steps**: Fix saved deals to auto-create user record if missing, or consider using real lightning images for more realistic effect
 
 ### Summary Workflow
 - Before finishing any task or using `/clear`, update the "Active Session Summary" above.
