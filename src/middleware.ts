@@ -44,7 +44,6 @@ export default clerkMiddleware(async (auth, req) => {
       console.error("Error checking admin access:", error);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
     }
-    return;
   }
 
   // For non-admin-API routes, get auth normally
