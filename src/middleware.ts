@@ -12,35 +12,21 @@ const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 const isAdminApiRoute = createRouteMatcher(["/api/admin(.*)"]);
 
 export default clerkMiddleware(async (auth, req) => {
-  const { userId } = await auth();
-
-  // Protect authenticated routes
-  if (isProtectedRoute(req)) {
-    await auth.protect();
-  }
-
-  // For admin pages, just require authentication (role check happens in page component)
-  if (isAdminRoute(req)) {
-    if (!userId) {
-      return NextResponse.redirect(new URL("/sign-in", req.url));
-    }
-  }
-
-  // For admin API routes, check role here
+  // For admin API routes, check CRON_SECRET FIRST before calling auth()
   if (isAdminApiRoute(req)) {
-    // Check for CRON_SECRET authentication (for automated jobs)
     const authHeader = req.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
     if (authHeader && cronSecret) {
       const token = authHeader.replace("Bearer ", "");
       if (token === cronSecret) {
-        // Allow request to proceed with CRON_SECRET auth
+        // Allow request to proceed with CRON_SECRET auth (bypass Clerk)
         return NextResponse.next();
       }
     }
 
     // If not authorized via CRON_SECRET, check Clerk authentication
+    const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -57,6 +43,22 @@ export default clerkMiddleware(async (auth, req) => {
     } catch (error) {
       console.error("Error checking admin access:", error);
       return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    }
+    return;
+  }
+
+  // For non-admin-API routes, get auth normally
+  const { userId } = await auth();
+
+  // Protect authenticated routes
+  if (isProtectedRoute(req)) {
+    await auth.protect();
+  }
+
+  // For admin pages, just require authentication (role check happens in page component)
+  if (isAdminRoute(req)) {
+    if (!userId) {
+      return NextResponse.redirect(new URL("/sign-in", req.url));
     }
   }
 });
