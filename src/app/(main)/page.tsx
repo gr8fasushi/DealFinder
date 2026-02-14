@@ -3,6 +3,7 @@ import { deals, stores as storesTable, categories as categoriesTable } from "@/l
 import { desc, eq } from "drizzle-orm";
 import { FilteredDeals } from "@/components/deals/FilteredDeals";
 import { Sparkles, TrendingDown, Zap } from "lucide-react";
+import { LightningStrikes } from "@/components/LightningStrikes";
 
 export const dynamic = "force-dynamic";
 
@@ -34,61 +35,64 @@ export default async function Home() {
   return (
     <main className="min-h-screen bg-gray-50/50 dark:bg-gray-950">
       {/* Hero Section */}
-      <div className="relative overflow-hidden bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700 animate-gradient-shift text-white">
+      <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 animate-gradient-shift text-white">
         {/* Decorative background shapes */}
         <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-white/5 rounded-full blur-3xl animate-pulse-soft" />
-          <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-purple-400/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: "2s" }} />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-blue-400/5 rounded-full blur-3xl" />
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-pulse-soft" />
+          <div className="absolute -bottom-32 -left-32 w-[500px] h-[500px] bg-purple-500/10 rounded-full blur-3xl animate-pulse-soft" style={{ animationDelay: "2s" }} />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-cyan-400/5 rounded-full blur-3xl" />
+
+          {/* Random lightning strikes */}
+          <LightningStrikes />
         </div>
 
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
+        {/* Subtle grid pattern overlay */}
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(96,165,250,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(96,165,250,0.03)_1px,transparent_1px)] bg-[size:60px_60px]" />
 
         <div className="relative container mx-auto px-4 py-8 sm:py-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             {/* Left: Title & subtitle */}
             <div className="min-w-0">
-              <div className="animate-slide-up inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-xs font-medium mb-3">
-                <Sparkles className="h-3 w-3 text-yellow-300" />
-                <span>Real-time price tracking</span>
+              <div className="animate-slide-up inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-400/10 backdrop-blur-sm border border-cyan-400/20 text-xs font-medium mb-4 shadow-lg shadow-cyan-500/10">
+                <Zap className="h-3.5 w-3.5 text-cyan-400" />
+                <span className="text-cyan-100 font-semibold">Lightning-fast savings</span>
               </div>
 
-              <h1 className="animate-slide-up-delayed text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight mb-2 leading-[1.1]">
-                Find the{" "}
-                <span className="bg-gradient-to-r from-yellow-200 via-amber-200 to-yellow-300 bg-clip-text text-transparent">
+              <h1 className="animate-slide-up-delayed text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight mb-3 leading-[1.1]">
+                Strike the{" "}
+                <span className="relative inline-block bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
                   Best Deals
+                  <div className="absolute -inset-1 bg-gradient-to-r from-cyan-400/20 to-purple-400/20 blur-xl -z-10" />
                 </span>
               </h1>
 
-              <p className="animate-slide-up-delayed-2 text-sm sm:text-base text-blue-100/90 max-w-md">
-                Discover amazing discounts from top retailers. We scan prices so
-                you don&apos;t have to.
+              <p className="animate-slide-up-delayed-2 text-sm sm:text-base text-blue-100/80 max-w-md leading-relaxed">
+                Discover amazing discounts in a flash. We scan prices from top retailers so you don&apos;t have to.
               </p>
             </div>
 
             {/* Right: Stat pills */}
             <div className="animate-slide-up-delayed-2 flex flex-row lg:flex-col gap-2.5 shrink-0">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm">
-                <Zap className="h-3.5 w-3.5 text-yellow-300" />
-                <span className="font-semibold">{latestDeals.length}</span> active deals
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-sm shadow-xl">
+                <Zap className="h-4 w-4 text-cyan-400 animate-pulse" />
+                <span className="font-bold text-white">{latestDeals.length}</span>
+                <span className="text-blue-200">active deals</span>
               </div>
               {featuredCount > 0 && (
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm">
-                  <TrendingDown className="h-3.5 w-3.5 text-emerald-300" />
-                  <span className="font-semibold">{featuredCount}</span> deals 20%+ off
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-sm shadow-xl">
+                  <TrendingDown className="h-4 w-4 text-emerald-400" />
+                  <span className="font-bold text-white">{featuredCount}</span>
+                  <span className="text-blue-200">deals 20%+ off</span>
                 </div>
               )}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 text-sm">
-                <Sparkles className="h-3.5 w-3.5 text-purple-300" />
-                {stores.length} stores tracked
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-sm shadow-xl">
+                <Sparkles className="h-4 w-4 text-purple-400" />
+                <span className="font-semibold text-white">{stores.length} stores tracked</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Bottom fade into content */}
-        <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-gray-50/50 dark:from-gray-950 to-transparent" />
       </div>
 
       {/* Deals Section */}
