@@ -15,6 +15,17 @@ DealFinder is a Next.js 15 deal aggregation platform that scrapes and displays d
 - **Scraping:** Cheerio + Axios with anti-blocking measures
 - **Testing:** Vitest
 
+## Active Session Summary
+- **Current Task**: Automated scraping with GitHub Actions implemented and tested successfully
+- **Recent Decisions**: Added CRON_SECRET authentication to middleware and scraper endpoint; created GitHub Actions workflow for 6-hour scraping schedule
+- **What Works**: Local testing with CRON_SECRET confirmed (10 Walmart deals scraped); middleware properly bypasses Clerk auth for automated jobs
+- **Next Steps**: Deploy to production (add GitHub Secrets and Vercel env vars), or implement saved deals feature
+
+### Summary Workflow
+- Before finishing any task or using `/clear`, update the "Active Session Summary" above.
+- Record what worked, what failed, and any new patterns discovered.
+- Keep this section under 20 lines to preserve context space.
+
 ## Project Structure
 
 ```

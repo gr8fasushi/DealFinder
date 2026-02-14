@@ -1,0 +1,37 @@
+name: Scrape Deals
+
+on:
+  schedule:
+    # Run every 6 hours (at 00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: '0 */6 * * *'
+  workflow_dispatch: # Allow manual triggering from GitHub UI
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Trigger scraping endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            ${{ secrets.SCRAPE_ENDPOINT_URL }})
+
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | sed '$d')
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "❌ Scraping failed with status $http_code"
+            exit 1
+          fi
+
+          echo "✅ Scraping completed successfully"
+
+      - name: Log completion
+        if: always()
+        run: |
+          echo "Scraping job completed at $(date)"

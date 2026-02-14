@@ -15,7 +15,20 @@
       "Bash(timeout:*)",
       "Bash(powershell -Command:*)",
       "Bash(dir:*)",
-      "Bash(exit:*)"
+      "Bash(exit:*)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(ls:*)",
+      "Bash(tasklist:*)",
+      "Bash(npx next dev:*)",
+      "Bash(npm install:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(curl:*)",
+      "Bash(python -m json.tool:*)",
+      "Bash(npm ls:*)",
+      "Bash(npm test:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(openssl rand:*)"
     ]
   }
 }

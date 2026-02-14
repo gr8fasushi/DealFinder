@@ -28,6 +28,19 @@ export default clerkMiddleware(async (auth, req) => {
 
   // For admin API routes, check role here
   if (isAdminApiRoute(req)) {
+    // Check for CRON_SECRET authentication (for automated jobs)
+    const authHeader = req.headers.get("authorization");
+    const cronSecret = process.env.CRON_SECRET;
+
+    if (authHeader && cronSecret) {
+      const token = authHeader.replace("Bearer ", "");
+      if (token === cronSecret) {
+        // Allow request to proceed with CRON_SECRET auth
+        return NextResponse.next();
+      }
+    }
+
+    // If not authorized via CRON_SECRET, check Clerk authentication
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

@@ -4,9 +4,26 @@ import { runScrapers } from "@/lib/scrapers/coordinator";
 
 export async function POST(request: NextRequest) {
   try {
-    const authCheck = await checkAdminAccess();
-    if (!authCheck.authorized) {
-      return NextResponse.json(authCheck.error, { status: authCheck.status });
+    // Check for CRON_SECRET authentication (for automated jobs)
+    const authHeader = request.headers.get("authorization");
+    const cronSecret = process.env.CRON_SECRET;
+
+    let isAuthorized = false;
+
+    if (authHeader && cronSecret) {
+      const token = authHeader.replace("Bearer ", "");
+      if (token === cronSecret) {
+        isAuthorized = true;
+        console.log("[Scraper] Authorized via CRON_SECRET");
+      }
+    }
+
+    // If not authorized via CRON_SECRET, check admin access
+    if (!isAuthorized) {
+      const authCheck = await checkAdminAccess();
+      if (!authCheck.authorized) {
+        return NextResponse.json(authCheck.error, { status: authCheck.status });
+      }
     }
 
     // Parse optional sources filter
