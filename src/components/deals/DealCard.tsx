@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -36,18 +37,13 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
   const [isSaved, setIsSaved] = useState(initialIsSaved);
   const [isLoading, setIsLoading] = useState(false);
   const { isSignedIn } = useAuth();
+  const router = useRouter();
 
   const savings = deal.savingsPercent
     ? Math.round(parseFloat(deal.savingsPercent))
     : null;
 
   const handleSaveToggle = async () => {
-    if (!isSignedIn) {
-      // Redirect to sign in
-      window.location.href = "/sign-in";
-      return;
-    }
-
     setIsLoading(true);
 
     try {
@@ -59,6 +55,7 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
 
         if (response.ok) {
           setIsSaved(false);
+          router.refresh(); // Refresh server components
         }
       } else {
         // Save
@@ -70,6 +67,7 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
 
         if (response.ok) {
           setIsSaved(true);
+          router.refresh(); // Refresh server components
         }
       }
     } catch (error) {
@@ -156,22 +154,24 @@ export function DealCard({ deal, initialIsSaved = false }: DealCardProps) {
       </Link>
 
       <CardFooter className="p-4 pt-0 flex gap-2">
-        {/* Save Button */}
-        <Button
-          variant={isSaved ? "default" : "outline"}
-          size="icon"
-          className={`shrink-0 rounded-xl ${isSaved ? "" : "border-gray-200 hover:bg-gray-50 hover:border-gray-300"}`}
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSaveToggle();
-          }}
-          disabled={isLoading}
-        >
-          <Heart
-            className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`}
-          />
-        </Button>
+        {/* Save Button - Only show if user is signed in */}
+        {isSignedIn && (
+          <Button
+            variant={isSaved ? "default" : "outline"}
+            size="icon"
+            className={`shrink-0 rounded-xl ${isSaved ? "" : "border-gray-200 hover:bg-gray-50 hover:border-gray-300"}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSaveToggle();
+            }}
+            disabled={isLoading}
+          >
+            <Heart
+              className={`h-4 w-4 ${isSaved ? "fill-current" : ""}`}
+            />
+          </Button>
+        )}
 
         {/* View Deal Button */}
         <a

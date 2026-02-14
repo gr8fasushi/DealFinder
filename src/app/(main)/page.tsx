@@ -1,5 +1,6 @@
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { deals, stores as storesTable, categories as categoriesTable } from "@/lib/db/schema";
+import { deals, stores as storesTable, categories as categoriesTable, savedDeals } from "@/lib/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { FilteredDeals } from "@/components/deals/FilteredDeals";
 import { Sparkles, TrendingDown, Zap } from "lucide-react";
@@ -19,6 +20,24 @@ export default async function Home() {
     limit: 20,
   });
 
+  // Check if user is authenticated and fetch saved deals
+  const { userId } = await auth();
+  let savedDealIds = new Set<number>();
+
+  if (userId) {
+    const userSavedDeals = await db.query.savedDeals.findMany({
+      where: eq(savedDeals.userId, userId),
+      columns: { dealId: true },
+    });
+    savedDealIds = new Set(userSavedDeals.map((sd) => sd.dealId));
+  }
+
+  // Add isSaved flag to each deal
+  const dealsWithSavedStatus = latestDeals.map((deal) => ({
+    ...deal,
+    isSaved: savedDealIds.has(deal.id),
+  }));
+
   // Fetch all active stores for filter
   const stores = await db.query.stores.findMany({
     where: eq(storesTable.isActive, true),
@@ -30,7 +49,7 @@ export default async function Home() {
     orderBy: categoriesTable.name,
   });
 
-  const featuredCount = latestDeals.filter((d) => d.isFeatured).length;
+  const featuredCount = dealsWithSavedStatus.filter((d) => d.isFeatured).length;
 
   return (
     <main className="min-h-screen bg-gray-50/50 dark:bg-gray-950">
@@ -75,7 +94,7 @@ export default async function Home() {
             <div className="animate-slide-up-delayed-2 flex flex-row lg:flex-col gap-2.5 shrink-0">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 backdrop-blur-md border border-white/10 text-sm shadow-xl">
                 <Zap className="h-4 w-4 text-cyan-400 animate-pulse" />
-                <span className="font-bold text-white">{latestDeals.length}</span>
+                <span className="font-bold text-white">{dealsWithSavedStatus.length}</span>
                 <span className="text-blue-200">active deals</span>
               </div>
               {featuredCount > 0 && (
@@ -98,7 +117,7 @@ export default async function Home() {
       {/* Deals Section */}
       <div className="container mx-auto px-4 py-8 sm:py-12 -mt-4">
         <FilteredDeals
-          initialDeals={latestDeals as unknown as Parameters<typeof FilteredDeals>[0]["initialDeals"]}
+          initialDeals={dealsWithSavedStatus as unknown as Parameters<typeof FilteredDeals>[0]["initialDeals"]}
           stores={stores.map((s) => ({ id: s.id, name: s.name, slug: s.slug }))}
           categories={categories.map((c) => ({ id: c.id, name: c.name, slug: c.slug }))}
         />

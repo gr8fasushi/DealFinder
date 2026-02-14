@@ -16,11 +16,22 @@ DealFinder is a Next.js 15 deal aggregation platform that scrapes and displays d
 - **Testing:** Vitest
 
 ## Active Session Summary
-- **Current Task**: Lightning animation complete and tested; user browsing site to verify features
-- **Recent Work**: Lightning strike animation committed with thin realistic strokes; user tested site and found saved deals feature working with minor issue
-- **What Works**: Lightning animation displays properly on homepage banner; YouTube video integration working (600 quota units used); deals browsing functional
-- **Known Issues**: Saved deals foreign key constraint error - user not in users table (user_39SmCswlPMyRN4GCn2uhCyuolqJ missing from users table)
-- **Next Steps**: Fix saved deals to auto-create user record if missing, or consider using real lightning images for more realistic effect
+- **Current Task**: Saved deals functionality fully implemented and working
+- **Recent Work**:
+  - Fixed saved deals foreign key constraint error by auto-creating users from Clerk
+  - Added save/unsave functionality to product detail pages
+  - Implemented real-time UI updates (router.refresh) after save/unsave
+  - Added saved deal state tracking across entire site (homepage, filtered deals, product pages)
+  - Compiled comprehensive backlog of future enhancements and bug fixes
+- **What Works**:
+  - Users auto-sync from Clerk to database when saving deals
+  - Save/unsave from deal cards (homepage, filtered views)
+  - Save/unsave from product detail pages
+  - Saved deals page with working unsave (immediate refresh)
+  - Heart icon properly shows saved state across all pages
+  - Save button hidden for non-authenticated users
+- **Known Issues**: None - all critical features working
+- **Next Steps**: Choose and implement next priority item from backlog (infinite scroll, dark mode, or branding)
 
 ### Summary Workflow
 - Before finishing any task or using `/clear`, update the "Active Session Summary" above.
@@ -572,14 +583,102 @@ Co-Authored-By: Claude Sonnet 4.5 <noreply@anthropic.com>"
 **Planned:**
 - Automated cron job setup (Vercel Cron)
 - Email notifications for featured deals
-- User favorites/watchlist functionality
 - Price history charts
 - Amazon PA-API integration
 - Deal scoring/ranking algorithm
 
+## Backlog / To-Do Items
+
+### 🔴 High Priority
+
+**1. Infinite Scroll / Pagination for Deals**
+- **Issue**: Main deals page loads all deals at once - will become problematic with thousands of items
+- **Solution**: Implement infinite scroll with pre-loading (load items just out of view)
+- **Goal**: Smooth, uninterrupted UX similar to Steam's game list
+- **Files**: `src/components/deals/FilteredDeals.tsx`, `src/app/api/deals/route.ts`
+
+**2. Dark/Light Mode Toggle**
+- **Features**:
+  - User preference toggle on main page (accessible header/navigation)
+  - Save preference to user profile if authenticated
+  - Default to light mode for unauthenticated users
+  - Persist across sessions for authenticated users
+- **Files**: `src/components/`, `src/lib/db/schema.ts` (user preferences), `src/app/globals.css`
+
+**3. Site Branding**
+- **Task**: Decide on final site name and rebrand entire site
+- **Scope**: Update all references, logo, meta tags, SEO, documentation
+- **Files**: Multiple (site-wide)
+
+### 🟡 Medium Priority
+
+**4. Admin Deal Management Enhancements**
+- **Toggle Active/Inactive**: Click active/inactive button to toggle deal state directly
+- **Deal History Tracking**:
+  - Add "View History" column on admin deals page
+  - Track: creation, modifications, activation/deactivation, deletion
+  - Show: who made changes and when (timestamps with timezone)
+- **Files**: `src/app/(admin)/admin/deals/`, new history table in schema
+
+**5. Timezone-Aware Timestamps**
+- **Issue**: Admin timestamps don't show timezone context
+- **Solution**: Display timestamps in user's timezone (MST for admin, detected from profile or browser)
+- **Files**: Admin components, utility functions for timestamp formatting
+
+**6. Popular Deals Section**
+- **Feature**: Homepage section highlighting popular/trending deals
+- **Metrics**: Track saved count and click count to determine trending
+- **Implementation**:
+  - Add `saved_count` and `click_count` columns to deals table
+  - Create aggregation logic for "Popular" deals
+  - Add dedicated homepage section
+- **Files**: `src/app/(main)/page.tsx`, `src/lib/db/schema.ts`, API routes
+
+**7. Error Logging & Monitoring**
+- **Requirement**: Admin-accessible error log with timestamps and actions
+- **Features**:
+  - Track errors throughout site navigation
+  - Periodic review capability for admins
+  - Error details: timestamp, user action, stack trace, user ID
+- **Tools**: Consider Sentry, LogRocket, or custom logging table
+- **Files**: Error boundary components, logging utility, admin log viewer page
+
+### 🟢 Low Priority / Polish
+
+**8. Banner Redesign**
+- **Issue**: Current homepage banner needs visual improvement
+- **Task**: Redesign with better aesthetics and branding
+- **Files**: `src/app/(main)/page.tsx`, `src/components/LightningStrikes.tsx`
+
+**9. Product Page Layout Fix**
+- **Issue**: "View Deal" button text wraps unnecessarily
+- **Solution**: Ensure button text stays on one line when space allows (responsive)
+- **Files**: `src/app/(main)/deals/[id]/page.tsx`
+
+**10. Filter Clear Behavior**
+- **Issue**: Clearing all filters doesn't immediately refresh to show unfiltered deals
+- **Solution**: Trigger immediate refresh/refetch when filters are cleared
+- **Files**: `src/components/deals/FilterBar.tsx`, `src/components/deals/FilteredDeals.tsx`
+
+**11. Sitemap Page**
+- **Feature**: Add sitemap page with footer link (standard website practice)
+- **Content**: Links to all major pages, categories, stores
+- **Files**: New `src/app/(main)/sitemap/page.tsx`, footer component
+
+### 📊 Analytics & Tracking
+
+**12. Deal Engagement Metrics**
+- **Track**:
+  - Number of saves per deal
+  - Click-through count per deal
+  - Use data to identify trending/popular deals
+- **Schema Changes**: Add `saved_count`, `click_count`, `last_clicked_at` to deals table
+- **Implementation**: Increment counters via API on save/click actions
+- **Files**: `src/lib/db/schema.ts`, `src/app/api/deals/`, deal components
+
 ---
 
-**Last Updated:** 2026-02-13
+**Last Updated:** 2026-02-14
 **Project Version:** 0.1.0
 **Next.js:** 15.5.12
 **React:** 19.1.0

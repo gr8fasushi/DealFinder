@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { savedDeals } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { DealGrid } from "@/components/deals/DealGrid";
+import { DealCard } from "@/components/deals/DealCard";
 
 export default async function SavedDealsPage() {
   const { userId } = await auth();
@@ -61,7 +61,11 @@ export default async function SavedDealsPage() {
             </p>
           </div>
         ) : (
-          <DealGrid deals={deals as Parameters<typeof DealGrid>[0]["deals"]} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {deals.map((deal: any) => (
+              <DealCard key={deal.id} deal={deal} initialIsSaved={true} />
+            ))}
+          </div>
         )}
       </div>
     </main>

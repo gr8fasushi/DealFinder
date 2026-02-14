@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { deals, stores, categories } from "@/lib/db/schema";
+import { deals, stores, categories, savedDeals } from "@/lib/db/schema";
 import { desc, eq, and, gte, lte, sql } from "drizzle-orm";
 
 export async function GET(request: NextRequest) {
@@ -98,8 +99,26 @@ export async function GET(request: NextRequest) {
       offset: (page - 1) * limit,
     });
 
+    // Check if user is authenticated and fetch saved deals
+    const { userId } = await auth();
+    let savedDealIds = new Set<number>();
+
+    if (userId) {
+      const userSavedDeals = await db.query.savedDeals.findMany({
+        where: eq(savedDeals.userId, userId),
+        columns: { dealId: true },
+      });
+      savedDealIds = new Set(userSavedDeals.map((sd) => sd.dealId));
+    }
+
+    // Add isSaved flag to each deal
+    const dealsWithSavedStatus = dealsData.map((deal) => ({
+      ...deal,
+      isSaved: savedDealIds.has(deal.id),
+    }));
+
     return NextResponse.json({
-      deals: dealsData,
+      deals: dealsWithSavedStatus,
       pagination: {
         page,
         limit,

@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { deals } from "@/lib/db/schema";
+import { deals, savedDeals } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import Image from "next/image";
 import Link from "next/link";
@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, ChevronRight } from "lucide-react";
 import { YouTubeVideos } from "@/components/deals/YouTubeVideos";
+import { SaveDealButton } from "@/components/deals/SaveDealButton";
 import type { Metadata } from "next";
 
 interface PageProps {
@@ -80,8 +81,18 @@ export default async function DealDetailPage({ params }: PageProps) {
   }
 
   // Check if user has saved this deal (if authenticated)
-  // Note: isSaved functionality can be added to UI later
-  await auth();
+  const { userId } = await auth();
+  let isSaved = false;
+
+  if (userId) {
+    const savedDeal = await db.query.savedDeals.findFirst({
+      where: and(
+        eq(savedDeals.userId, userId),
+        eq(savedDeals.dealId, dealId)
+      ),
+    });
+    isSaved = !!savedDeal;
+  }
 
   // Type assertions for relations
   const store = deal.store as { id: number; name: string; logoUrl: string | null };
@@ -233,8 +244,9 @@ export default async function DealDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* Action Button */}
-            <div className="pt-4">
+            {/* Action Buttons */}
+            <div className="pt-4 space-y-3">
+              {/* View Deal Button */}
               <Button
                 asChild
                 size="lg"
@@ -249,6 +261,9 @@ export default async function DealDetailPage({ params }: PageProps) {
                   View Deal on {store.name}
                 </a>
               </Button>
+
+              {/* Save Deal Button */}
+              <SaveDealButton dealId={dealId} initialIsSaved={isSaved} />
             </div>
           </div>
         </div>

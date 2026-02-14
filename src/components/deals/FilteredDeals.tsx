@@ -15,6 +15,7 @@ interface Deal {
   imageUrl: string | null;
   productUrl: string;
   isFeatured: boolean;
+  isSaved?: boolean;
   store: { name: string; logoUrl: string | null } | null;
   category: { name: string } | null;
 }

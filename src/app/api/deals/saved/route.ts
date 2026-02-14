@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { savedDeals, deals } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
+import { ensureUserExists } from "@/lib/auth-helpers";
 
 // Get user's saved deals
 export async function GET() {
@@ -43,6 +44,17 @@ export async function POST(request: NextRequest) {
 
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Ensure user exists in database before saving deal
+    try {
+      await ensureUserExists(userId);
+    } catch (error) {
+      console.error("[Save Deal] Failed to sync user:", error);
+      return NextResponse.json(
+        { error: "Failed to sync user data" },
+        { status: 500 }
+      );
     }
 
     const body = await request.json();
